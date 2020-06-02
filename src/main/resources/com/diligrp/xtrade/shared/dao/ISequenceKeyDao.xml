@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.diligrp.xtrade.shared.dao.ISequenceKeyDao">
+
+    <resultMap id="PersistentKeyMap" type="com.diligrp.xtrade.shared.domain.PersistentSequenceKey">
+        <id column="id" property="id"/>
+        <result column="key" property="key"/>
+        <result column="start_with" property="startWith"/>
+        <result column="inc_span" property="incSpan"/>
+        <result column="scope" property="scope"/>
+        <result column="version" property="version"/>
+        <result column="expired_date" property="expiredDate"/>
+        <result column="today" property="today"/>
+        <result column="description" property="description"/>
+    </resultMap>
+
+    <select id="loadSequenceKey" parameterType="map" resultMap="PersistentKeyMap">
+        SELECT
+          id, `key`, start_with, inc_span, scope, version, expired_date, curdate() AS today, description
+        FROM
+          xtrade_sequence_key
+        WHERE
+          `key` = #{key}
+          <if test="scope != null">
+            AND `scope` = #{scope}
+          </if>
+    </select>
+
+    <select id="findSequenceKeyById" parameterType="long" resultMap="PersistentKeyMap">
+        SELECT
+          id, `key`, start_with, inc_span, scope, version, expired_date, curdate() AS today, description
+        FROM
+          xtrade_sequence_key
+        WHERE
+          id = #{id}
+    </select>
+
+    <update id="compareAndSet" parameterType="map">
+        UPDATE
+          xtrade_sequence_key
+        SET
+          start_with = #{newValue}, version = version + 1
+        WHERE
+          id = #{id} AND version = #{version}
+    </update>
+
+    <select id="lockSequenceKey" parameterType="long" resultMap="PersistentKeyMap">
+        SELECT
+          id, `key`, start_with, inc_span, scope, version, expired_date, curdate() AS today, description
+        FROM
+          xtrade_sequence_key
+        WHERE
+          id = #{id}
+        FOR UPDATE
+    </select>
+
+    <update id="unlockSequenceKey" parameterType="map">
+        UPDATE
+          xtrade_sequence_key
+        SET
+          start_with = #{newValue}, expired_date = #{expiredDate}, version = version + 1
+        WHERE
+          id = #{id}
+    </update>
+</mapper>

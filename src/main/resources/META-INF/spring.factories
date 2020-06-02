@@ -1,0 +1,5 @@
+org.springframework.boot.autoconfigure.EnableAutoConfiguration=\
+com.diligrp.xtrade.shared.config.JacksonAutoConfiguration,\
+com.diligrp.xtrade.shared.config.KeyGeneratorAutoConfiguration,\
+com.diligrp.xtrade.shared.config.JedisAutoConfiguration,\
+com.diligrp.xtrade.shared.config.SapiAutoConfiguration

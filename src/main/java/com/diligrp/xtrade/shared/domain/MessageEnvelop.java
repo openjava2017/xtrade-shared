@@ -2,12 +2,12 @@ package com.diligrp.xtrade.shared.domain;
 
 import com.diligrp.xtrade.shared.constant.Constants;
 import com.diligrp.xtrade.shared.exception.MessageEnvelopException;
-import com.diligrp.xtrade.shared.security.HexUtils;
 import com.diligrp.xtrade.shared.security.RsaCipher;
 import com.diligrp.xtrade.shared.util.AssertUtils;
 
 import java.security.PrivateKey;
 import java.security.PublicKey;
+import java.util.Base64;
 
 /**
  * 消息信封模型将安全数据与业务数据进行分离
@@ -34,12 +34,12 @@ public class MessageEnvelop {
     private String accessToken;
 
     /**
-     * 签名数据-十六进制
+     * 签名数据-BASE64编码
      */
     private String signature;
 
     /**
-     * 业务数据-十六进制（charset编码格式的字符流）
+     * 业务数据-BASE64编码
      */
     private String payload;
 
@@ -51,12 +51,12 @@ public class MessageEnvelop {
     /**
      * 数据信封状态
      */
-    private Integer status = 0;
+    private Integer state = 0;
 
     /**
      * 数据封包，根据我方的私钥进行数据签名
      *
-     * @param privateKey - 十六进制私钥字符串，参见HexUtils工具包
+     * @param privateKey - Base64编码的私钥字符串
      */
     public void packEnvelop(String privateKey) {
         AssertUtils.notEmpty(privateKey, "privateKey missed");
@@ -66,7 +66,7 @@ public class MessageEnvelop {
             byte[] data = payload.getBytes(getCharset());
             PrivateKey secretKey = RsaCipher.getPrivateKey(privateKey);
             byte[] sign = RsaCipher.sign(data, secretKey);
-            this.signature = HexUtils.encodeHexStr(sign);
+            this.signature = Base64.getEncoder().encodeToString(sign);
         } catch (MessageEnvelopException ex) {
             throw ex;
         } catch (Exception ex) {
@@ -77,7 +77,7 @@ public class MessageEnvelop {
     /**
      * 数据拆包，根据对方的公钥进行数据验签
      *
-     * @param publicKey - 十六进制公钥字符串，参见HexUtils工具包
+     * @param publicKey - Base64编码的公钥字符串
      */
     public void unpackEnvelop(String publicKey) {
         AssertUtils.notEmpty(publicKey, "publicKey missed");
@@ -86,7 +86,7 @@ public class MessageEnvelop {
 
         try {
             byte[] data = payload.getBytes(getCharset());
-            byte[] sign = HexUtils.decodeHex(signature);
+            byte[] sign = Base64.getDecoder().decode(signature);
             PublicKey secretKey = RsaCipher.getPublicKey(publicKey);
             boolean result = RsaCipher.verify(data, sign, secretKey);
             if (!result) {
@@ -147,12 +147,12 @@ public class MessageEnvelop {
         this.charset = charset;
     }
 
-    public Integer getStatus() {
-        return status;
+    public Integer getState() {
+        return state;
     }
 
-    public void setStatus(Integer status) {
-        this.status = status;
+    public void setState(Integer state) {
+        this.state = state;
     }
 
     public static MessageEnvelop of(String recipient, String payload) {
@@ -175,7 +175,7 @@ public class MessageEnvelop {
         envelop.setAccessToken(accessToken);
         envelop.setPayload(payload);
         envelop.setCharset(charset);
-        envelop.setStatus(0);
+        envelop.setState(0);
         return envelop;
     }
 }

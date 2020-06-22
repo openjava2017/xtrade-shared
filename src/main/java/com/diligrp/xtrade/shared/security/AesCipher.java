@@ -5,6 +5,7 @@ import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.Key;
+import java.util.Base64;
 
 /**
  * AES算法工具类
@@ -22,7 +23,7 @@ public class AesCipher {
         keyGenerator.init(128);
 
         SecretKey secretKey = keyGenerator.generateKey();
-        return HexUtils.encodeHexStr(secretKey.getEncoded(), false);
+        return Base64.getEncoder().encodeToString(secretKey.getEncoded());
     }
 
     public static byte[] encrypt(byte[] data, String secretKey) throws Exception {
@@ -42,12 +43,7 @@ public class AesCipher {
     }
 
     private static Key toKey(String secretKey) {
-        byte[] key = HexUtils.decodeHex(secretKey);
+        byte[] key = Base64.getDecoder().decode(secretKey);
         return new SecretKeySpec(key, KEY_ALGORITHM);
-    }
-
-    public static void main(String[] args) throws Exception {
-        String key = generateSecretKey();
-        System.out.println(HexUtils.encodeHex(encrypt("5hjakla05hjakla0".getBytes("UTF-8"), key)).length);
     }
 }

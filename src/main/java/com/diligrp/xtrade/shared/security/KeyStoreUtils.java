@@ -7,6 +7,7 @@ import java.security.KeyStore;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.cert.Certificate;
+import java.util.Base64;
 
 /**
  * 数字证书工具类
@@ -24,7 +25,7 @@ public class KeyStoreUtils {
     public static String getPublicKeyAsHex(String keyStorePath, String storeType, String storePass, String alias) throws Exception {
         InputStream in = ClassUtils.getDefaultClassLoader().getResourceAsStream(keyStorePath);
         PublicKey publicKey = getPublicKey(in, storeType, storePass, alias);
-        return HexUtils.encodeHexStr(publicKey.getEncoded());
+        return Base64.getEncoder().encodeToString(publicKey.getEncoded());
     }
 
     public static KeyStore getKeyStore(InputStream in, String storeType, String storePass) throws Exception {

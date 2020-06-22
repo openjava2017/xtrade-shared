@@ -2,12 +2,12 @@ package com.diligrp.xtrade.shared.util;
 
 import java.util.Random;
 import java.util.UUID;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
- * @Auther: miaoguoxin
- * @Date: 2019/7/20 22:16
+ * 随机数工具类
  */
-public class RandomUtils {
+public final class RandomUtils {
     /**
      * 生成随机字符串, a-z A-Z 0-9
      */
@@ -22,6 +22,19 @@ public class RandomUtils {
         return sb.toString();
     }
 
+    /**
+     * 生成固定长度的随机数字字符串
+     */
+    public static String randomNumber(int length) {
+        AssertUtils.isTrue(length > 0, "invalid length");
+        StringBuilder builder = new StringBuilder();
+        for (int i = 0; i < length; i ++) {
+            int next = ThreadLocalRandom.current().nextInt(10);
+            builder.append((char) (48 + next));
+        }
+
+        return builder.toString();
+    }
 
     /**
      * 生成8位随机码（数字0~9+大写字母A~Z）

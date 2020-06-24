@@ -44,10 +44,6 @@ public class Message<T> {
         this.data = data;
     }
 
-    public boolean isSuccess() {
-        return code != null && code.equals(CODE_SUCCESS);
-    }
-
     public static Message<?> success() {
         Message<?> result = new Message<>();
         result.code = CODE_SUCCESS;

@@ -174,6 +174,7 @@ public class MessageEnvelop {
         envelop.setRecipient(recipient);
         envelop.setAccessToken(accessToken);
         envelop.setPayload(payload);
+        envelop.setSignature(signature);
         envelop.setCharset(charset);
         envelop.setState(0);
         return envelop;

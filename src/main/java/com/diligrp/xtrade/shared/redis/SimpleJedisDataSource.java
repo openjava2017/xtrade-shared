@@ -27,7 +27,7 @@ public class SimpleJedisDataSource extends JedisPoolConfig implements JedisDataS
      */
     private String password;
     /**
-     * 连接超时时间 - 毫秒?
+     * 连接超时时间 - 毫秒
      */
     private int timeout = 30000;
     /**

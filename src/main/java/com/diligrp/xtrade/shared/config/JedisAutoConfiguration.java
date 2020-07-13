@@ -10,13 +10,10 @@ import com.diligrp.xtrade.shared.redis.SimpleJedisDataSource;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
-import org.springframework.boot.autoconfigure.data.redis.RedisProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import redis.clients.jedis.Jedis;
-
-import java.time.Duration;
 
 @Configuration(proxyBeanMethods = false)
 @ConditionalOnClass(Jedis.class)
@@ -25,14 +22,21 @@ import java.time.Duration;
 public class JedisAutoConfiguration {
     @Bean(name = "jedisDataSource")
     @ConditionalOnMissingBean
-    public JedisDataSource jedisDataSource(RedisProperties properties) {
+    public JedisDataSource jedisDataSource(JedisProperties properties) {
         SimpleJedisDataSource dataSource = new SimpleJedisDataSource();
-        dataSource.setDatabase(properties.getDatabase());
         dataSource.setRedisHost(properties.getHost());
         dataSource.setRedisPort(properties.getPort());
         dataSource.setPassword(properties.getPassword());
-        Duration timeout = properties.getTimeout();
-        dataSource.setTimeout((int) (timeout == null ? 20000 : timeout.toMillis()));
+        dataSource.setDatabase(properties.getDatabase());
+        dataSource.setTimeout(properties.getTimeout());
+        JedisProperties.Pool pool = properties.getPool();
+        if (pool != null) {
+            dataSource.setMinIdle(pool.getMinIdle());
+            dataSource.setMaxIdle(pool.getMaxIdle());
+            dataSource.setMaxTotal(pool.getMaxActive());
+            dataSource.setMaxWaitMillis(pool.getMaxWait());
+            dataSource.setTimeBetweenEvictionRunsMillis(pool.getTimeBetweenEvictionRuns());
+        }
         return dataSource;
     }
 

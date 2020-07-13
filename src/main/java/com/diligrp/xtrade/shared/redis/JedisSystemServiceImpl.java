@@ -13,17 +13,17 @@ import redis.clients.jedis.Response;
  * @author: brenthuang
  * @date: 2018/01/02
  */
-public class RedisSystemServiceImpl implements IRedisSystemService {
+public class JedisSystemServiceImpl implements IRedisSystemService {
 
     /**
      * Redis连接池配置
      */
     private JedisDataSource dataSource;
 
-    public RedisSystemServiceImpl() {
+    public JedisSystemServiceImpl() {
     }
 
-    public RedisSystemServiceImpl(JedisDataSource dataSource) {
+    public JedisSystemServiceImpl(JedisDataSource dataSource) {
         this.dataSource = dataSource;
     }
 

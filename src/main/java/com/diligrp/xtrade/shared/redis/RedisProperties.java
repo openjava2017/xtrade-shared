@@ -2,13 +2,8 @@ package com.diligrp.xtrade.shared.redis;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
-@ConfigurationProperties(prefix = "xtrade.jedis")
-public class JedisProperties {
-    /**
-     * Database index.
-     */
-    private int database = 0;
-
+@ConfigurationProperties(prefix = "xtrade.redis")
+public class RedisProperties {
     /**
      * Redis server host.
      */
@@ -29,15 +24,12 @@ public class JedisProperties {
      */
     private int timeout = 30000;
 
+    /**
+     * Database index.
+     */
+    private int database = 0;
+
     private Pool pool;
-
-    public int getDatabase() {
-        return database;
-    }
-
-    public void setDatabase(int database) {
-        this.database = database;
-    }
 
     public String getHost() {
         return host;
@@ -71,6 +63,14 @@ public class JedisProperties {
         this.timeout = timeout;
     }
 
+    public int getDatabase() {
+        return database;
+    }
+
+    public void setDatabase(int database) {
+        this.database = database;
+    }
+
     public Pool getPool() {
         return pool;
     }
@@ -85,17 +85,17 @@ public class JedisProperties {
     public static class Pool {
 
         /**
-         * Maximum number of "idle" connections in the pool. Use a negative value to
-         * indicate an unlimited number of idle connections.
-         */
-        private int maxIdle = 8;
-
-        /**
          * Target for the minimum number of idle connections to maintain in the pool. This
          * setting only has an effect if both it and time between eviction runs are
          * positive.
          */
         private int minIdle = 0;
+
+        /**
+         * Maximum number of "idle" connections in the pool. Use a negative value to
+         * indicate an unlimited number of idle connections.
+         */
+        private int maxIdle = 8;
 
         /**
          * Maximum number of connections that can be allocated by the pool at a given
@@ -116,20 +116,20 @@ public class JedisProperties {
          */
         private long timeBetweenEvictionRuns = 60000; // one minutes by default
 
-        public int getMaxIdle() {
-            return this.maxIdle;
-        }
-
-        public void setMaxIdle(int maxIdle) {
-            this.maxIdle = maxIdle;
-        }
-
         public int getMinIdle() {
             return this.minIdle;
         }
 
         public void setMinIdle(int minIdle) {
             this.minIdle = minIdle;
+        }
+
+        public int getMaxIdle() {
+            return this.maxIdle;
+        }
+
+        public void setMaxIdle(int maxIdle) {
+            this.maxIdle = maxIdle;
         }
 
         public int getMaxActive() {

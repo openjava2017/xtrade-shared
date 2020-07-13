@@ -19,8 +19,8 @@ import java.util.concurrent.TimeUnit;
  * @author: brenthuang
  * @date: 2017/12/28
  */
-public class RedisDistributedLock implements IDistributedLock {
-    private static Logger LOG = LoggerFactory.getLogger(RedisDistributedLock.class);
+public class JedisDistributedLock implements IDistributedLock {
+    private static Logger LOG = LoggerFactory.getLogger(JedisDistributedLock.class);
 
     private static String KEY_FRONTDESK_LOCKER_PREFEX = "boss:lock:";
 
@@ -41,10 +41,10 @@ public class RedisDistributedLock implements IDistributedLock {
      */
     private JedisDataSource dataSource;
 
-    public RedisDistributedLock() {
+    public JedisDistributedLock() {
     }
 
-    public RedisDistributedLock(JedisDataSource dataSource) {
+    public JedisDistributedLock(JedisDataSource dataSource) {
         this.dataSource = dataSource;
     }
 

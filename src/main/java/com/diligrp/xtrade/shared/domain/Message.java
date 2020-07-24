@@ -7,11 +7,11 @@ package com.diligrp.xtrade.shared.domain;
  * @date: 2020/03/24
  */
 public class Message<T> {
-    private static final int CODE_SUCCESS = 200;
+    protected static final int CODE_SUCCESS = 200;
 
-    private static final int CODE_FAILURE = 1000;
+    protected static final int CODE_FAILURE = 1000;
 
-    private static final String MSG_SUCCESS = "success";
+    protected static final String MSG_SUCCESS = "success";
 
     // 编码
     private Integer code;

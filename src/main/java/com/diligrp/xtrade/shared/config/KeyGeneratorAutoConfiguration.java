@@ -4,6 +4,7 @@ import com.diligrp.xtrade.shared.dao.ISequenceKeyDao;
 import com.diligrp.xtrade.shared.sequence.DefaultKeySynchronizer;
 import com.diligrp.xtrade.shared.sequence.IKeySynchronizer;
 import com.diligrp.xtrade.shared.sequence.KeyGeneratorManager;
+import com.diligrp.xtrade.shared.sequence.SnowflakeKeyManager;
 import com.diligrp.xtrade.shared.util.ClassUtils;
 import org.apache.ibatis.builder.xml.XMLMapperBuilder;
 import org.apache.ibatis.session.SqlSessionFactory;
@@ -75,5 +76,11 @@ public class KeyGeneratorAutoConfiguration {
     @ConditionalOnMissingBean
     public KeyGeneratorManager keyGeneratorManager(IKeySynchronizer keySynchronizer) {
         return new KeyGeneratorManager(keySynchronizer);
+    }
+
+    @Bean(name = "snowflakeKeyManager")
+    @ConditionalOnMissingBean
+    public SnowflakeKeyManager snowflakeKeyManager() {
+        return new SnowflakeKeyManager();
     }
 }

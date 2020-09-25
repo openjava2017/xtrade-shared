@@ -39,4 +39,20 @@ public class NumberUtils {
             return defaultValue;
         }
     }
+
+    public static boolean isNumeric(String str) {
+        if (ObjectUtils.isEmpty(str)) {
+            return false;
+        } else {
+            int sz = str.length();
+
+            for(int i = 0; i < sz; ++i) {
+                if (!Character.isDigit(str.charAt(i))) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
 }

@@ -6,6 +6,8 @@ import com.diligrp.xtrade.shared.util.RandomUtils;
 
 import java.time.LocalDateTime;
 import java.time.ZoneOffset;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.TimeUnit;
@@ -32,7 +34,7 @@ public class SnowflakeKeyManager {
             try {
                 result = locker.tryLock(15, TimeUnit.SECONDS);
                 if (!result) {
-                    throw new RuntimeException("Timeout to get SnowflakeKeyGenerator for " + key.toString());
+                    throw new RuntimeException("Timeout to get SnowflakeKeyGenerator for " + cachedKey);
                 }
 
                 // Double check for performance purpose
@@ -41,7 +43,7 @@ public class SnowflakeKeyManager {
                     keyGenerators.put(cachedKey, keyGenerator);
                 }
             } catch (InterruptedException iex) {
-                throw new RuntimeException("Interrupted to get SnowflakeKeyGenerator for " + key.toString(), iex);
+                throw new RuntimeException("Interrupted to get SnowflakeKeyGenerator for " + cachedKey, iex);
             } finally {
                 if (result) {
                     locker.unlock();
@@ -238,24 +240,26 @@ public class SnowflakeKeyManager {
 
     public interface SnowflakeKey {
         // 默认时间戳位数
-        int DEFAULT_TIME_BITS = 28;
+        int timeBits = 28;
         // 默认机器标识位数
-        int DEFAULT_WORKER_BITS = 22;
+        int workerBits = 22;
         // 默认序号位数
-        int DEFAULT_SEQ_BITS = 13;
-
-        String identifier();
+        int seqBits = 13;
 
         default int timeBits() {
-            return DEFAULT_TIME_BITS;
+            return timeBits;
         }
 
         default int workerBits() {
-            return DEFAULT_WORKER_BITS;
+            return workerBits;
         }
 
         default int seqBits() {
-            return DEFAULT_SEQ_BITS;
+            return seqBits;
+        }
+
+        default String identifier() {
+            return this.toString();
         }
     }
 }

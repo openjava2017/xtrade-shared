@@ -107,4 +107,20 @@ public class ObjectUtils {
     public static boolean isNull(Object obj) {
         return null == obj;
     }
+
+    public static boolean isNumeric(String str) {
+        if (isEmpty(str)) {
+            return false;
+        } else {
+            int sz = str.length();
+
+            for(int i = 0; i < sz; ++i) {
+                if (!Character.isDigit(str.charAt(i))) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+    }
 }

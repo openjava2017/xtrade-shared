@@ -171,6 +171,18 @@ public class JedisSystemServiceImpl implements IRedisSystemService {
         }
     }
 
+    /**
+     * 自定义执行Redis命令
+     */
+    @Override
+    public void execute(IConnectionCallback callback) throws RedisSystemException {
+        try (Jedis connection = dataSource.getConnection()) {
+            callback.doInConnection(connection);
+        } catch (Exception ex) {
+            throw new RedisSystemException("Call redis remove exception", ex);
+        }
+    }
+
     public void setDataSource(JedisDataSource dataSource) {
         this.dataSource = dataSource;
     }

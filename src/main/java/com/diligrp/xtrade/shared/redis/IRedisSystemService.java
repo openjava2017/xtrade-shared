@@ -1,6 +1,7 @@
 package com.diligrp.xtrade.shared.redis;
 
 import com.diligrp.xtrade.shared.exception.RedisSystemException;
+import redis.clients.jedis.Jedis;
 
 /**
  * Redis缓存服务基础接口
@@ -73,4 +74,13 @@ public interface IRedisSystemService {
      * @throws RedisSystemException
      */
     void remove(String... keys) throws RedisSystemException;
+
+    /**
+     * 自定义执行Redis命令
+     */
+    void execute(IConnectionCallback callback) throws RedisSystemException;
+
+    interface IConnectionCallback {
+        void doInConnection(Jedis connection);
+    }
 }

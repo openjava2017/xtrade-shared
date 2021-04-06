@@ -38,13 +38,18 @@ public class RequestContext extends HashMap<String, Object> {
         Object value = get(param);
         if (value != null) {
             return value instanceof LocalDateTime ? (LocalDateTime)value :
-                    DateUtils.parseDateTime(value.toString(), DateUtils.YYYY_MM_DD_HH_MM_SS);
+                DateUtils.parseDateTime(value.toString(), DateUtils.YYYY_MM_DD_HH_MM_SS);
         }
         return null;
     }
 
     public <T> T getObject(String param, Class<T> type) {
         Object value = get(param);
+        return value == null ? null : type.cast(value);
+    }
+
+    public <T> T getObject(Class<T> type) {
+        Object value = get(type.getName());
         return value == null ? null : type.cast(value);
     }
 

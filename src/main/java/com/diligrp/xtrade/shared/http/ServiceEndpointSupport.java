@@ -27,6 +27,8 @@ public abstract class ServiceEndpointSupport {
 
     private static final String CONTENT_TYPE_FORM = "application/x-www-form-urlencoded;charset=UTF-8";
 
+    private static final String CONTENT_TYPE_XML = "text/xml;charset=UTF-8";
+
     private volatile HttpClient httpClient;
 
     private Object lock = new Object();
@@ -35,17 +37,16 @@ public abstract class ServiceEndpointSupport {
         return send(requestUrl, null, body);
     }
 
-
     public HttpResult send(String requestUrl, HttpHeader[] headers, String body) {
         if (ObjectUtils.isEmpty(requestUrl)) {
             throw new IllegalArgumentException("Invalid http request url, url=" + requestUrl);
         }
 
         HttpRequest.Builder request = HttpRequest.newBuilder().uri(URI.create(requestUrl))
-                .version(HttpClient.Version.HTTP_2)
-                .timeout(Duration.ofMillis(MAX_REQUEST_TIMEOUT_TIME))
-                .header(CONTENT_TYPE, CONTENT_TYPE_JSON)
-                .POST(HttpRequest.BodyPublishers.ofString(body));
+            .version(HttpClient.Version.HTTP_2)
+            .timeout(Duration.ofMillis(MAX_REQUEST_TIMEOUT_TIME))
+            .header(CONTENT_TYPE, CONTENT_TYPE_JSON)
+            .POST(HttpRequest.BodyPublishers.ofString(body));
         // Wrap the HTTP headers
         if (headers != null && headers.length > 0) {
             request.headers(Arrays.stream(headers).flatMap(h -> Stream.of(h.param, h.value)).toArray(String[]::new));
@@ -64,21 +65,39 @@ public abstract class ServiceEndpointSupport {
         }
 
         HttpRequest.Builder request = HttpRequest.newBuilder().uri(URI.create(requestUrl))
-                .version(HttpClient.Version.HTTP_2)
-                .timeout(Duration.ofMillis(MAX_REQUEST_TIMEOUT_TIME))
-                .header(CONTENT_TYPE, CONTENT_TYPE_FORM);
+            .version(HttpClient.Version.HTTP_2)
+            .timeout(Duration.ofMillis(MAX_REQUEST_TIMEOUT_TIME))
+            .header(CONTENT_TYPE, CONTENT_TYPE_FORM);
         // Wrap the HTTP headers
         if (headers != null && headers.length > 0) {
             String[] heads = Arrays.stream(headers).filter(h -> h != null)
-                    .flatMap(h -> Stream.of(h.param, h.value)).toArray(String[]::new);
+                .flatMap(h -> Stream.of(h.param, h.value)).toArray(String[]::new);
             request.headers(heads);
         }
         if (params != null && params.length > 0) {
             // [key1, value1, key2, value2] -> key1=value1&key2=value2
             String body = Arrays.stream(params).filter(p -> p != null)
-                    .map(p -> "".concat(p.param).concat("=").concat(p.value))
-                    .reduce((key, value) -> "".concat(key).concat("&").concat(value)).get();
+                .map(p -> "".concat(p.param).concat("=").concat(p.value))
+                .reduce((key, value) -> "".concat(key).concat("&").concat(value)).get();
             request.POST(HttpRequest.BodyPublishers.ofString(body));
+        }
+
+        return execute(request.build());
+    }
+
+    public HttpResult sendXml(String requestUrl, HttpHeader[] headers, String xml) {
+        if (ObjectUtils.isEmpty(requestUrl)) {
+            throw new IllegalArgumentException("Invalid http request url, url=" + requestUrl);
+        }
+
+        HttpRequest.Builder request = HttpRequest.newBuilder().uri(URI.create(requestUrl))
+            .version(HttpClient.Version.HTTP_2)
+            .timeout(Duration.ofMillis(MAX_REQUEST_TIMEOUT_TIME))
+            .header(CONTENT_TYPE, CONTENT_TYPE_XML)
+            .POST(HttpRequest.BodyPublishers.ofString(xml));
+        // Wrap the HTTP headers
+        if (headers != null && headers.length > 0) {
+            request.headers(Arrays.stream(headers).flatMap(h -> Stream.of(h.param, h.value)).toArray(String[]::new));
         }
 
         return execute(request.build());
@@ -90,12 +109,12 @@ public abstract class ServiceEndpointSupport {
                 // Double check for performance purpose
                 if (httpClient == null) {
                     HttpClient.Builder builder = HttpClient.newBuilder().version(HttpClient.Version.HTTP_2)
-                            // 认证，默认情况下Authenticator.getDefault()是null值，会报错
+                        // 认证，默认情况下Authenticator.getDefault()是null值，会报错
 //                            .authenticator(Authenticator.getDefault())
-                            // 缓存，默认情况下 CookieHandler.getDefault()是null值，会报错
+                        // 缓存，默认情况下 CookieHandler.getDefault()是null值，会报错
 //                            .cookieHandler(CookieHandler.getDefault())
-                            .connectTimeout(Duration.ofMillis(MAX_CONNECT_TIMEOUT_TIME))
-                            .followRedirects(HttpClient.Redirect.NEVER);
+                        .connectTimeout(Duration.ofMillis(MAX_CONNECT_TIMEOUT_TIME))
+                        .followRedirects(HttpClient.Redirect.NEVER);
                     // Build SSL
                     Optional<SSLContext> sslContext = buildSSLContext();
                     sslContext.ifPresent(builder::sslContext);

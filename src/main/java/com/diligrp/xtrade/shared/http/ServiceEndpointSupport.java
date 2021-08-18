@@ -161,7 +161,7 @@ public abstract class ServiceEndpointSupport {
     /**
      * @throws ServiceConnectException, ServiceAccessException, ServiceTimeoutException
      */
-    private HttpResult execute(HttpRequest request) {
+    protected HttpResult execute(HttpRequest request) {
         try {
             HttpResponse<String> response = getHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
 

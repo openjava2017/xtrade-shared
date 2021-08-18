@@ -1,15 +1,15 @@
 package com.diligrp.xtrade.shared.http;
 
 import com.diligrp.xtrade.shared.exception.ServiceAccessException;
+import com.diligrp.xtrade.shared.exception.ServiceConnectException;
+import com.diligrp.xtrade.shared.exception.ServiceTimeoutException;
 import com.diligrp.xtrade.shared.util.ObjectUtils;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
-import java.io.IOException;
+import java.net.ConnectException;
 import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.net.http.*;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Optional;
@@ -33,10 +33,16 @@ public abstract class ServiceEndpointSupport {
 
     private Object lock = new Object();
 
+    /**
+     * @throws ServiceConnectException, ServiceAccessException, ServiceTimeoutException
+     */
     public HttpResult send(String requestUrl, String body) {
         return send(requestUrl, null, body);
     }
 
+    /**
+     * @throws ServiceConnectException, ServiceAccessException, ServiceTimeoutException
+     */
     public HttpResult send(String requestUrl, HttpHeader[] headers, String body) {
         if (ObjectUtils.isEmpty(requestUrl)) {
             throw new IllegalArgumentException("Invalid http request url, url=" + requestUrl);
@@ -55,10 +61,16 @@ public abstract class ServiceEndpointSupport {
         return execute(request.build());
     }
 
-    public HttpResult send(String requestUrl, HttpParam[] params) throws ServiceAccessException {
+    /**
+     * @throws ServiceConnectException, ServiceAccessException, ServiceTimeoutException
+     */
+    public HttpResult send(String requestUrl, HttpParam[] params) {
         return send(requestUrl, null, params);
     }
 
+    /**
+     * @throws ServiceConnectException, ServiceAccessException, ServiceTimeoutException
+     */
     public HttpResult send(String requestUrl, HttpHeader[] headers, HttpParam[] params) {
         if (ObjectUtils.isEmpty(requestUrl)) {
             throw new IllegalArgumentException("Invalid http request url, url=" + requestUrl);
@@ -85,6 +97,9 @@ public abstract class ServiceEndpointSupport {
         return execute(request.build());
     }
 
+    /**
+     * @throws ServiceConnectException, ServiceAccessException, ServiceTimeoutException
+     */
     public HttpResult sendXml(String requestUrl, HttpHeader[] headers, String xml) {
         if (ObjectUtils.isEmpty(requestUrl)) {
             throw new IllegalArgumentException("Invalid http request url, url=" + requestUrl);
@@ -143,21 +158,23 @@ public abstract class ServiceEndpointSupport {
         return Optional.ofNullable(null);
     }
 
+    /**
+     * @throws ServiceConnectException, ServiceAccessException, ServiceTimeoutException
+     */
     private HttpResult execute(HttpRequest request) {
         try {
             HttpResponse<String> response = getHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() != 200) {
-                throw new ServiceAccessException(1000, "Invalid http status code: " + response.statusCode());
-            }
 
             HttpResult result = HttpResult.create();
             result.statusCode = response.statusCode();
             result.responseText = response.body();
             return result;
-        } catch (IOException ioe) {
-            throw new ServiceAccessException("Service access exception", ioe);
-        } catch (InterruptedException iex) {
-            throw new ServiceAccessException("Service access interrupted", iex);
+        } catch (ConnectException | HttpConnectTimeoutException cex) {
+            throw new ServiceConnectException("Remote service connection exception", cex);
+        } catch (HttpTimeoutException hex) {
+            throw new ServiceTimeoutException("Remote service access timeout", hex);
+        } catch (Exception ex) {
+            throw new ServiceAccessException("Remote service access exception", ex);
         }
     }
 

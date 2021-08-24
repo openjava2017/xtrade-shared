@@ -12,26 +12,27 @@ import java.net.URI;
 import java.net.http.*;
 import java.time.Duration;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executor;
-import java.util.stream.Stream;
 
 public abstract class ServiceEndpointSupport {
-    private static final int MAX_CONNECT_TIMEOUT_TIME = 10000;
+    protected static final int MAX_CONNECT_TIMEOUT_TIME = 10000;
 
-    private static final int MAX_REQUEST_TIMEOUT_TIME = 20000;
+    protected static final int MAX_REQUEST_TIMEOUT_TIME = 30000;
 
-    private static final String CONTENT_TYPE = "Content-Type";
+    protected static final String CONTENT_TYPE = "Content-Type";
 
-    private static final String CONTENT_TYPE_JSON = "application/json;charset=UTF-8";
+    protected static final String CONTENT_TYPE_JSON = "application/json;charset=UTF-8";
 
-    private static final String CONTENT_TYPE_FORM = "application/x-www-form-urlencoded;charset=UTF-8";
+    protected static final String CONTENT_TYPE_FORM = "application/x-www-form-urlencoded;charset=UTF-8";
 
-    private static final String CONTENT_TYPE_XML = "text/xml;charset=UTF-8";
+    protected static final String CONTENT_TYPE_XML = "text/xml;charset=UTF-8";
 
-    private volatile HttpClient httpClient;
+    protected volatile HttpClient httpClient;
 
-    private Object lock = new Object();
+    protected Object lock = new Object();
 
     /**
      * @throws ServiceConnectException, ServiceAccessException, ServiceTimeoutException
@@ -55,7 +56,8 @@ public abstract class ServiceEndpointSupport {
             .POST(HttpRequest.BodyPublishers.ofString(body));
         // Wrap the HTTP headers
         if (headers != null && headers.length > 0) {
-            request.headers(Arrays.stream(headers).flatMap(h -> Stream.of(h.param, h.value)).toArray(String[]::new));
+            // request.headers(Arrays.stream(headers).flatMap(h -> Stream.of(h.param, h.value)).toArray(String[]::new));
+            Arrays.stream(headers).filter(h -> h != null).forEach(h -> request.header(h.param, h.value));
         }
 
         return execute(request.build());
@@ -82,9 +84,7 @@ public abstract class ServiceEndpointSupport {
             .header(CONTENT_TYPE, CONTENT_TYPE_FORM);
         // Wrap the HTTP headers
         if (headers != null && headers.length > 0) {
-            String[] heads = Arrays.stream(headers).filter(h -> h != null)
-                .flatMap(h -> Stream.of(h.param, h.value)).toArray(String[]::new);
-            request.headers(heads);
+            Arrays.stream(headers).filter(h -> h != null).forEach(h -> request.header(h.param, h.value));
         }
         if (params != null && params.length > 0) {
             // [key1, value1, key2, value2] -> key1=value1&key2=value2
@@ -112,7 +112,7 @@ public abstract class ServiceEndpointSupport {
             .POST(HttpRequest.BodyPublishers.ofString(xml));
         // Wrap the HTTP headers
         if (headers != null && headers.length > 0) {
-            request.headers(Arrays.stream(headers).flatMap(h -> Stream.of(h.param, h.value)).toArray(String[]::new));
+            Arrays.stream(headers).filter(h -> h != null).forEach(h -> request.header(h.param, h.value));
         }
 
         return execute(request.build());
@@ -168,6 +168,7 @@ public abstract class ServiceEndpointSupport {
             HttpResult result = HttpResult.create();
             result.statusCode = response.statusCode();
             result.responseText = response.body();
+            result.headers = response.headers() == null ? null : response.headers().map();
             return result;
         } catch (ConnectException | HttpConnectTimeoutException cex) {
             throw new ServiceConnectException("Remote service connection exception", cex);
@@ -209,9 +210,23 @@ public abstract class ServiceEndpointSupport {
     public static class HttpResult {
         public int statusCode = -1;
         public String responseText;
+        Map<String, List<String>> headers;
 
         public static HttpResult create() {
             return new HttpResult();
+        }
+
+        public String header(String key) {
+            if (headers == null) {
+                return null;
+            }
+
+            List<String> values = headers.get(key);
+            if (values == null || values.isEmpty()) {
+                return null;
+            }
+
+            return values.get(0);
         }
     }
 }

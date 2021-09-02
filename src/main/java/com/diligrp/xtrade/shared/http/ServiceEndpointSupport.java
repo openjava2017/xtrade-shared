@@ -210,7 +210,7 @@ public abstract class ServiceEndpointSupport {
     public static class HttpResult {
         public int statusCode = -1;
         public String responseText;
-        Map<String, List<String>> headers;
+        public Map<String, List<String>> headers;
 
         public static HttpResult create() {
             return new HttpResult();

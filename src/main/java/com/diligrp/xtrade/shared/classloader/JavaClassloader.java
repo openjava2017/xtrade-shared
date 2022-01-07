@@ -47,7 +47,6 @@ public class JavaClassloader extends ClassLoader {
         String path = name.replace('.', '/').concat(".class");
         Resource resource = resourceFactory.getResource(path);
         if (resource == null) return null;
-        System.out.println(String.format("%s load %s", resource.getSourceURL(), name));
         try {
             byte[] bytes = resource.getBytes();
             return defineClass(name, bytes, 0, bytes.length);
@@ -81,7 +80,7 @@ public class JavaClassloader extends ClassLoader {
     }
 
     public static void main(String[] args) {
-        ClassLoader loader = new JavaClassloader("/Users/brenthuang/Work/projects/Openjava/build/classes/java/main:" +
+        ClassLoader loader = new JavaClassloader(//"/Users/brenthuang/Work/projects/Openjava/build/classes/java/main:" +
                 "/Users/brenthuang/Work/projects/Openjava/build/libs/Openjava-1.0-SNAPSHOT.jar");
         try {
             Class<?> c = loader.loadClass("org.openjava.service.impl.HelloService");

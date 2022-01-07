@@ -1,5 +1,6 @@
 package com.diligrp.xtrade.shared.classloader;
 
+import java.io.IOException;
 import java.net.URL;
 
 /**
@@ -17,6 +18,6 @@ public interface IResourceFactory {
 
         Resource getResource(String name);
 
-        URL[] getClassPath();
+        URL[] getClassPath() throws IOException;
     }
 }

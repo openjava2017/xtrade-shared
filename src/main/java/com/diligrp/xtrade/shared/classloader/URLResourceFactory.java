@@ -80,13 +80,13 @@ class URLResourceFactory implements IResourceFactory {
                 // 处理URL格式 jar:file:/your_path/my.jar!/和jar:http://www.hostname.com/your_path/my.jar!/
                 // jar:file:/your_path/my.jar!/ 将被转换成 file:/your_path/my.jar; jar:http://***将被保留原有格式
                 URL nestedUrl = new URL(file.substring(0, file.length() - 2));
-                return new Loaders.JarLoader(nestedUrl);
+                return new Loaders.JarLoader(nestedUrl, false);
             } else {
                 return new Loaders.URLLoader(url);
             }
         } else {
             // 处理URL格式 file:/your_path/my.jar
-            return new Loaders.JarLoader(url);
+            return new Loaders.JarLoader(url, false);
         }
     }
 

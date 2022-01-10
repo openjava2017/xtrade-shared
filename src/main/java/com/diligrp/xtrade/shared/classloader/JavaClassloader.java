@@ -2,10 +2,12 @@ package com.diligrp.xtrade.shared.classloader;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 
 /**
  * 自定义类加载器实现
@@ -40,6 +42,20 @@ public class JavaClassloader extends ClassLoader {
         Class<?> c = findClassOrNull(name);
         if (c == null) throw new ClassNotFoundException(name);
         return c;
+    }
+
+    @Override
+    protected URL findResource(String name) {
+        Resource resource = resourceFactory.getResource(name);
+        if (resource != null) {
+            return resource.getURL();
+        }
+        return null;
+    }
+
+    @Override
+    protected Enumeration<URL> findResources(String name) {
+        return resourceFactory.findResources(name);
     }
 
     private Class<?> findClassOrNull(String name) {
@@ -80,13 +96,21 @@ public class JavaClassloader extends ClassLoader {
     }
 
     public static void main(String[] args) {
-        ClassLoader loader = new JavaClassloader(//"/Users/brenthuang/Work/projects/Openjava/build/classes/java/main:" +
+        ClassLoader loader = new JavaClassloader(// "/Users/brenthuang/Work/projects/Openjava/build/classes/java/main:" +
                 "/Users/brenthuang/Work/projects/Openjava/build/libs/Openjava-1.0-SNAPSHOT.jar");
         try {
             Class<?> c = loader.loadClass("org.openjava.service.impl.HelloService");
             System.out.println(c.getClassLoader());
             System.out.println(c.getClassLoader().getParent());
 
+            Enumeration<URL> urls = loader.getResources("config/conf.properties");
+            while (urls.hasMoreElements()) {
+                URL url = urls.nextElement();
+                InputStream is = url.openConnection().getInputStream();
+                System.out.println(new String(is.readAllBytes()));
+            }
+            InputStream is = loader.getResourceAsStream("config/conf.properties");
+            System.out.println(new String(is.readAllBytes()));
             Constructor<?> constructor = c.getDeclaredConstructor();
             Object service = constructor.newInstance();
             Method method = c.getDeclaredMethod("sayHello");

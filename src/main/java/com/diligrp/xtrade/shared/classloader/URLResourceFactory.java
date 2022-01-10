@@ -3,9 +3,11 @@ package com.diligrp.xtrade.shared.classloader;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 
 /**
  * 资源工厂实现
@@ -37,6 +39,42 @@ class URLResourceFactory implements IResourceFactory {
             }
         }
         return null;
+    }
+
+    @Override
+    public Enumeration<URL> findResources(String name) {
+        return new Enumeration<>() {
+            private int index = 0;
+            private URL url = null;
+
+            private boolean next() {
+                if (url != null) {
+                    return true;
+                } else {
+                    ILoader loader;
+                    while ((loader = getLoader(index++)) != null) {
+                        Resource resource = loader.getResource(name);
+                        if (resource != null && (url = resource.getURL()) != null) {
+                            return true;
+                        }
+                    }
+                    return false;
+                }
+            }
+
+            public boolean hasMoreElements() {
+                return next();
+            }
+
+            public URL nextElement() {
+                if (!next()) {
+                    throw new NoSuchElementException();
+                }
+                URL u = url;
+                url = null;
+                return u;
+            }
+        };
     }
 
     private synchronized ILoader getLoader(int index) {

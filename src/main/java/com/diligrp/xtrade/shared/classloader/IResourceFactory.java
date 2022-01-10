@@ -2,6 +2,7 @@ package com.diligrp.xtrade.shared.classloader;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Enumeration;
 
 /**
  * 资源工厂接口, 利用资源加载器完成资源加载
@@ -12,6 +13,8 @@ import java.net.URL;
  */
 public interface IResourceFactory {
     Resource getResource(String name);
+
+    Enumeration<URL> findResources(String name);
 
     interface ILoader {
         URL getBaseURL();

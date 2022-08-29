@@ -8,6 +8,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
+import java.util.List;
 
 /**
  * 自定义类加载器实现
@@ -71,8 +72,8 @@ public class JavaClassloader extends ClassLoader {
         }
     }
 
-    private IResourceFactory initResourceFactory(String classPath) {
-        ArrayList<URL> path = new ArrayList<>();
+    protected IResourceFactory initResourceFactory(String classPath) {
+        List<URL> path = new ArrayList<>();
         if (classPath != null) {
             // map each element of class path to a file URL
             int off = 0, next;
@@ -96,7 +97,7 @@ public class JavaClassloader extends ClassLoader {
     }
 
     public static void main(String[] args) {
-        ClassLoader loader = new JavaClassloader(// "/Users/brenthuang/Work/projects/Openjava/build/classes/java/main:" +
+        ClassLoader loader = new JavaClassloader( "/Users/brenthuang/Work/projects/Openjava/build/classes/java/main:" +
                 "/Users/brenthuang/Work/projects/Openjava/build/libs/Openjava-1.0-SNAPSHOT.jar");
         try {
             Class<?> c = loader.loadClass("org.openjava.service.impl.HelloService");

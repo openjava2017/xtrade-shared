@@ -60,8 +60,7 @@ public class DateUtils {
     
     public static LocalDateTime addDays(long amount) {
     	LocalDateTime localDateTime = LocalDateTime.now();
-    	localDateTime.plusDays(amount);
-    	return localDateTime;
+    	return localDateTime.plusDays(amount);
     }
 
     public static String format(Date date, String format) {

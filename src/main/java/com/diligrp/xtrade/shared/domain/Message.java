@@ -44,30 +44,30 @@ public class Message<T> {
         this.data = data;
     }
 
-    public static Message<?> success() {
-        Message<?> result = new Message<>();
+    public static <E> Message<E> success() {
+        var result = new Message<E>();
         result.code = CODE_SUCCESS;
         result.message = MSG_SUCCESS;
         return result;
     }
 
     public static <E> Message<E> success(E data) {
-        Message<E> result = new Message<>();
+        var result = new Message<E>();
         result.code = CODE_SUCCESS;
         result.data = data;
         result.message = MSG_SUCCESS;
         return result;
     }
 
-    public static Message<?> failure(String message) {
-        Message<?> result = new Message<>();
+    public static <E> Message<E> failure(String message) {
+        var result = new Message<E>();
         result.code = CODE_FAILURE;
         result.message = message;
         return result;
     }
 
-    public static Message<?> failure(int code, String message) {
-        Message<?> result = new Message<>();
+    public static <E> Message<E> failure(int code, String message) {
+        var result = new Message<E>();
         result.code = code;
         result.message = message;
         return result;

@@ -8,7 +8,7 @@ import java.util.List;
  * @author: brenthuang
  * @date: 2020/03/24
  */
-public class PageMessage<E> extends Message<List<E>>{
+public class PageMessage<T> extends Message<List<T>>{
 	// 总记录数
 	private long total;
 
@@ -20,8 +20,8 @@ public class PageMessage<E> extends Message<List<E>>{
 		this.total = total;
 	}
 
-	public static <T> PageMessage<T> success(long total, List<T> data) {
-		PageMessage<T> page = new PageMessage<>();
+	public static <E> PageMessage<E> success(long total, List<E> data) {
+		var page = new PageMessage<E>();
 		page.setCode(CODE_SUCCESS);
 		page.setTotal(total);
 		page.setData(data);
@@ -30,7 +30,7 @@ public class PageMessage<E> extends Message<List<E>>{
 	}
 
 	public static PageMessage<?> failure(String message) {
-		PageMessage<?> page = new PageMessage<>();
+		var page = new PageMessage<>();
 		page.setCode(CODE_FAILURE);
 		page.setTotal(0);
 		page.setData(null);
@@ -39,7 +39,7 @@ public class PageMessage<E> extends Message<List<E>>{
 	}
 
 	public static PageMessage<?> failure(int code, String message) {
-		PageMessage<?> page = new PageMessage<>();
+		var page = new PageMessage<>();
 		page.setCode(code);
 		page.setTotal(0);
 		page.setData(null);

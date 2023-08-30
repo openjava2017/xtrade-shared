@@ -1,97 +1,68 @@
 package com.diligrp.xtrade.shared.domain;
 
-import com.diligrp.xtrade.shared.exception.QrCodeException;
-
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.util.HashMap;
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
 
 /**
- * 订单二维码，用于扫码付款
+ * 订单二维码: od://MTU2MjcyODU2ODoxMjM0NTY.bNyAdr0aw4pjorA_KKqn0w
  */
 public class OrderQrCode extends QrCode {
-    private static final String PROTO_ID = "od";
+    private static final String PASSWORD = "qetwsx83";
 
-    private static final int DATA_SIZE = 26;
+    private static final String QRCODE_PROTOCOL = "od";
 
-    // 是否支持过期
-    private boolean expiredSupport;
-    // 二维码时间戳
-    private long timestamp;
     // 市场编码
-    private int marketId;
+    private long marketId;
     // 订单ID
-    private long orderId;
-    // 卖家账号
-    private long accountId;
+    private String orderId;
+
+    public static OrderQrCode from(String source) {
+        return new OrderQrCode(source);
+    }
+
+    public static OrderQrCode of(byte version, long timestamp, byte useFor, long marketId, String orderId) {
+        return new OrderQrCode(version, timestamp, useFor, marketId, orderId);
+    }
 
     private OrderQrCode(String source) {
         super(source);
-
-        if (!PROTO_ID.equalsIgnoreCase(proto)) {
-            throw new QrCodeException(1010, "无效二维码: 不支持此类二维码协议");
-        }
+        unpack(PASSWORD);
     }
 
-    private OrderQrCode(boolean expiredSupport, int marketId, long orderId, long accountId) {
-        this.proto = PROTO_ID;
-        this.expiredSupport = expiredSupport;
-        //UNIX时间戳，单位秒
-        this.timestamp = System.currentTimeMillis() / 1000;
+    private OrderQrCode(byte version, long timestamp, byte useFor, long marketId, String orderId) {
+        super(version, timestamp, useFor);
         this.marketId = marketId;
         this.orderId = orderId;
-        this.accountId = accountId;
+        pack(PASSWORD);
     }
 
     @Override
-    protected void pack() {
-        //1个字节特征码 + 8个字节时间戳 + 1个字节市场编码 + 8个字节订单ID + 8个字节用户账号
-        ByteBuffer packet = ByteBuffer.allocate(DATA_SIZE).order(ByteOrder.BIG_ENDIAN);
-        //一个字节的属性码: 0-永久 1-临时
-        byte feature = (byte) (expiredSupport ? 1 : 0);
-        packet.put(feature);
-
-        packet.putLong(timestamp);
-        packet.put((byte) marketId);
-        packet.putLong(orderId);
-        packet.putLong(accountId);
+    protected byte[] doPack() {
+        byte[] orderBytes = orderId.getBytes(StandardCharsets.UTF_8);
+        ByteBuffer packet = ByteBuffer.allocate(orderBytes.length + 8).order(ByteOrder.BIG_ENDIAN);
+        packet.putLong(marketId);
+        packet.put(orderBytes);
         packet.flip();
-        data = packet.array();
-
-        //签名
-        sign();
+        byte[] result = packet.array();
+        return result;
     }
 
     @Override
-    protected void unpack() {
-        if (!verify()) {
-            throw new QrCodeException(QRCODE_ERROR, "无效二维码: 数据验签失败");
-        }
-
-        if (data == null || data.length != DATA_SIZE) {
-            throw new QrCodeException(QRCODE_ERROR, "无效二维码: 业务数据格式错误");
-        }
-
+    protected void doUnpack(byte[] data) {
         ByteBuffer packet = ByteBuffer.wrap(data).order(ByteOrder.BIG_ENDIAN);
-        byte feature = packet.get();
-        expiredSupport = feature == 1 ? true : false;
-        timestamp = packet.getLong();
-        marketId = packet.get();
-        orderId = packet.getLong();
-        accountId = packet.getLong();
+        this.marketId = packet.getLong();
+        byte[] bytes = new byte[packet.remaining()];
+        for (int i = 0; packet.hasRemaining(); i++) {
+            bytes[i] = packet.get();
+        }
+        packet.clear();
+        this.orderId = new String(bytes, StandardCharsets.UTF_8);
     }
 
     @Override
-    public Map<String, Object> dumpData() {
-        var data = new HashMap<String, Object>();
-        data.put("protocol", proto);
-        data.put("timestamp", timestamp);
-        data.put("marketId", marketId);
-        data.put("orderId", orderId);
-        data.put("accountId", accountId);
-
-        return data;
+    public String protocol() {
+        return QRCODE_PROTOCOL;
     }
 
     /**
@@ -100,50 +71,23 @@ public class OrderQrCode extends QrCode {
      * 比如：OrderQrCode类只支持od协议的二维码数据od://MTU2MjcyODU2ODoxMjM0NTY.bNyAdr0aw4pjorA_KKqn0w
      */
     public static boolean protoSupport(String qrCode) {
-        return qrCode.startsWith(PROTO_ID);
+        return qrCode.startsWith(QRCODE_PROTOCOL + PROTO_SEPARATOR);
     }
 
-    public boolean expiredSupport() {
-        return expiredSupport;
-    }
-
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    public int getMarketId() {
+    public long marketId() {
         return marketId;
     }
 
-    public long getOrderId() {
+    public String orderId() {
         return orderId;
     }
 
-    public long getAccountId() {
-        return accountId;
-    }
-
-    public static OrderQrCode from(String source) {
-        //电子卡账号二维码信息格式  od://MTU2MjcyODU2ODoxMjM0NTY.bNyAdr0aw4pjorA_KKqn0w；
-        OrderQrCode qrCode = new OrderQrCode(source);
-        qrCode.unpack();
-        return qrCode;
-    }
-
-    public static OrderQrCode of(boolean expiredSupport, int marketId, long orderId, long accountId) {
-        // 明文信息 = 属性码(一个字节）+ 时间戳(八个字节) + 市场编码(一个字节) + 用户账号(八个字节)
-        OrderQrCode qrCode = new OrderQrCode(expiredSupport, marketId, orderId, accountId);
-        qrCode.pack();
-        return qrCode;
-    }
-
     public static void main(String[] args) {
-        OrderQrCode qrCode = OrderQrCode.of(false, 8, 123456, 654321);
+        OrderQrCode qrCode = OrderQrCode.of((byte)1, 100001, (byte)2, 6543, "12345678");
         String qrCodeStr = qrCode.toString();
         System.out.println(qrCodeStr);
         qrCode = OrderQrCode.from(qrCodeStr);
-        System.out.println(qrCode.getMarketId());
-        System.out.println(qrCode.getOrderId());
-        System.out.println(qrCode.getAccountId());
+        System.out.println(qrCode.marketId());
+        System.out.println(qrCode.orderId());
     }
 }

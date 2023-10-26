@@ -35,6 +35,9 @@ public class CurrencyUtils {
         return currency.toString();
     }
 
+    /**
+     * 100000 -> 1,000.00
+     */
     public static String toNoSymbolCurrency(Long cent) {
         if (cent == null) {
             return null;
@@ -52,6 +55,9 @@ public class CurrencyUtils {
         return currency.substring(1);
     }
 
+    /**
+     * 100000 -> 1000.00
+     */
     public static String cent2TenNoSymbol(Long cent) {
 
         BigDecimal yuan = point2ten(cent);
